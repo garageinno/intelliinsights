@@ -15,11 +15,12 @@ from nltk.stem.porter import PorterStemmer
 import operator
 import pandas as pd
 
-#import sys
-#sys.path.insert(0, '../pythontools')
+import sys
+sys.path.insert(0, './pythontools')
+from pyutils.io import FileManager
+sys.path.insert(0, '../nlp')
 
-#from pyutils.io import FileManager
-
+# %%
 
 real_estate_keywords = ['house', 'propert', 'properti','property','home', 'mortgag', 'mortgage','estate', 'estat']
 retail_keywords = ['retail', 'retai', 'shop', 'amazon' , 'sale', 'supermarket' , 'groceri']
@@ -44,8 +45,8 @@ j = 0
 # %%
 article_list = []
 #for article in all_articles_aviation:
-article = 'data2.txt'
-file = './articles/defence/' + article
+article = 'data10.txt'
+file = './articles/aviation/' + article
 full_text = fm.read(file)
 article_cleaned = re.sub('[^a-zA-Z]',' ', full_text)
 article_cleaned = article_cleaned.lower()
@@ -61,13 +62,14 @@ count = count_frequency(article_cleaned)
 
 sorted_x = sorted(count.items(), key=operator.itemgetter(1), reverse = True)
 
-# %%
-
-
 df = pd.read_csv('kwd_list.txt')
-kwd_list = df.iloc[:,0]
-word_hits = hit_count(sorted_x, kwd_list)
 
+df1 = df.loc[df['category'] == 'aviation'].iloc[:,0:-1]
+kwd_wgt_dict = df1.set_index('keyword').to_dict()['weight']
+
+word_hits = hit_count(sorted_x, df1.iloc[:,0], kwd_wgt_dict)
+
+# %%
 
 retail_hits  = hit_count(sorted_x , retail_keywords)
 energy_hits = hit_count(sorted_x, energy_keywords)
@@ -103,6 +105,7 @@ for article in article_list:
 #
 #    
 
+# %%
 
 def count_frequency(str):
     counts = dict()
@@ -118,10 +121,19 @@ def count_frequency(str):
     
     
     
-def hit_count(sorted_tuple_list, keywords):
+#def hit_count(sorted_tuple_list, keywords):
+#    hits = 0
+#    for tuple in sorted_tuple_list:
+#     for word in keywords:
+#        if(word == tuple[0]):
+#          hits = hits + tuple[1]
+#    return hits
+
+def hit_count(sorted_tuple_list, keywords, kwd_wgt_dict):
     hits = 0
     for tuple in sorted_tuple_list:
      for word in keywords:
         if(word == tuple[0]):
-          hits = hits + tuple[1]
+          hits = hits + tuple[1] * kwd_wgt_dict[word]
     return hits
+
