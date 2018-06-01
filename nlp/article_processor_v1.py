@@ -16,9 +16,8 @@ import operator
 import pandas as pd
 
 import sys
-sys.path.insert(0, './pythontools')
+sys.path.insert(0, '../pythontools')
 from pyutils.io import FileManager
-sys.path.insert(0, '../nlp')
 
 # %%
 
@@ -37,16 +36,81 @@ all_articles_finance = os.listdir("./articles/finance")
 all_articles_power = os.listdir("./articles/power")
 all_articles_telecom = os.listdir("./articles/telecom")
 
+
+articles_dir_list = ["aviation","finance","power","infrastructure"]
+
+
+
 fm = FileManager()
+
 
 ps = PorterStemmer()
 j = 0
+parent_dir = "./articles/"
+for directory in articles_dir_list:
+    all_articles_in_this_dir = os.listdir(parent_dir+directory)
+    
+    for article in all_articles_in_this_dir:
+        
+        category = directory
+        file = parent_dir + category + '/'+ article
+        
+        
+        
+        
+        full_text = fm.read(file)
+        article_cleaned = re.sub('[^a-zA-Z]',' ', full_text)
+        article_cleaned = article_cleaned.lower()
+        article_cleaned = article_cleaned.split()
+        
+        article_cleaned = [ps.stem(word) for word in article_cleaned if not word in set(stopwords.words('english'))]
+        
+        #import nltk
+        #nltk.download('stopwords')
+        
+        article_cleaned = ' '.join(article_cleaned)
+        count = count_frequency(article_cleaned)
+        
+        sorted_x = sorted(count.items(), key=operator.itemgetter(1), reverse = True)
+        
+        df = pd.read_csv('kwd_list.txt')
+        
+        df_power = df.loc[df['category'] == 'power'].iloc[:,0:-1]
+        kwd_wgt_dict_power = df_power.set_index('keyword').to_dict()['weight']
+        word_hits_power = hit_count(sorted_x, df_power.iloc[:,0], kwd_wgt_dict_power)
+        
+        
+       
+        df_finance = df.loc[df['category'] == 'finance'].iloc[:,0:-1]
+        kwd_wgt_dict_finance = df_finance.set_index('keyword').to_dict()['weight']
+        word_hits_finance = hit_count(sorted_x, df_finance.iloc[:,0], kwd_wgt_dict_finance)
+        
+        df_aviation = df.loc[df['category'] == 'aviation'].iloc[:,0:-1]
+        kwd_wgt_dict_aviation = df_aviation.set_index('keyword').to_dict()['weight']
+        word_hits_aviation = hit_count(sorted_x, df_aviation.iloc[:,0], kwd_wgt_dict_aviation)
+        
+        df_infrastructure= df.loc[df['category'] == 'infrastructure'].iloc[:,0:-1]
+        kwd_wgt_dict_infrastructure = df_infrastructure.set_index('keyword').to_dict()['weight']
+        word_hits_infrastructure= hit_count(sorted_x, df_infrastructure.iloc[:,0], kwd_wgt_dict_infrastructure)
+        
+        articles_to_review = './review_article/'+'power'+'.txt'
+        val = category +',' + file + ',' + str(word_hits_aviation) + ','  + str(word_hits_finance) + ','  + str(word_hits_power) +str(word_hits_infrastructure) + ','+ '\n'
+        fm.append(articles_to_review, val)
+        
+        
+        
+    
 
 # %%
 article_list = []
 #for article in all_articles_aviation:
-article = 'data10.txt'
-file = './articles/aviation/' + article
+article = 'data4.txt'
+category = 'infrastructure'
+file = './articles/'+ category + '/'+ article
+
+
+
+
 full_text = fm.read(file)
 article_cleaned = re.sub('[^a-zA-Z]',' ', full_text)
 article_cleaned = article_cleaned.lower()
@@ -64,10 +128,31 @@ sorted_x = sorted(count.items(), key=operator.itemgetter(1), reverse = True)
 
 df = pd.read_csv('kwd_list.txt')
 
-df1 = df.loc[df['category'] == 'aviation'].iloc[:,0:-1]
-kwd_wgt_dict = df1.set_index('keyword').to_dict()['weight']
+df_power = df.loc[df['category'] == 'power'].iloc[:,0:-1]
+kwd_wgt_dict_power = df_power.set_index('keyword').to_dict()['weight']
+word_hits_power = hit_count(sorted_x, df_power.iloc[:,0], kwd_wgt_dict_power)
 
-word_hits = hit_count(sorted_x, df1.iloc[:,0], kwd_wgt_dict)
+
+df_defence = df.loc[df['category'] == 'defence'].iloc[:,0:-1]
+kwd_wgt_dict_defence = df_defence.set_index('keyword').to_dict()['weight']
+word_hits_defence = hit_count(sorted_x, df_defence.iloc[:,0], kwd_wgt_dict_defence)
+
+df_finance = df.loc[df['category'] == 'finance'].iloc[:,0:-1]
+kwd_wgt_dict_finance = df_finance.set_index('keyword').to_dict()['weight']
+word_hits_finance = hit_count(sorted_x, df_finance.iloc[:,0], kwd_wgt_dict_finance)
+
+df_aviation = df.loc[df['category'] == 'aviation'].iloc[:,0:-1]
+kwd_wgt_dict_aviation = df_aviation.set_index('keyword').to_dict()['weight']
+word_hits_aviation = hit_count(sorted_x, df_aviation.iloc[:,0], kwd_wgt_dict_aviation)
+
+
+#scores_list = [word_hits_finance, word_hits_power, word_hits_defence, word_hits_aviation]
+#if if_article_needs_a_manual_review(scores_list):
+#    articles_to_review = './review_article/'+category+'.txt'
+#    ###category,file_name,aviation_score,defence_score,finance_score,power_score
+#    val = category +',' + file + ',' + str(word_hits_aviation) + ','  + str(word_hits_defence) + ','  + str(word_hits_finance) + ','  + str(word_hits_power) + '\n'
+#    fm.append(articles_to_review, val)
+    
 
 # %%
 
@@ -106,6 +191,17 @@ for article in article_list:
 #    
 
 # %%
+    
+def if_article_needs_a_manual_review(all_scores):
+    main_score = all_scores[0]
+    deviation = main_score/2;
+    for i in range(1, len(all_scores)):
+        if abs(all_scores[i]) > deviation:
+            return True
+        
+    return False
+            
+        
 
 def count_frequency(str):
     counts = dict()

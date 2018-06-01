@@ -1,0 +1,1 @@
+category,file_name,aviation_score,defence_score,finance_score,power_score,infrastructure_score,is_accurate

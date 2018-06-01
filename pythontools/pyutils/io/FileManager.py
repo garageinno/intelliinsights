@@ -44,3 +44,18 @@ class FileManager:
                 print('Contents written successfully to file (%s).' % filePath)
         else:
             print('The file contents were not written.')
+    
+    def append(self, filePath, contents):
+        proceed = True
+        if not exists(filePath):
+            consent = input('The file does not exist, create [yes]? ')
+            if consent.lower() == 'yes':
+                proceed = True
+            else:
+                proceed = False
+        if proceed is True:
+            with open(filePath, 'a') as file:
+                file.write(contents)
+                print('Contents appended successfully to file (%s).' % filePath)
+        else:
+            print('The file contents were not appended.')
