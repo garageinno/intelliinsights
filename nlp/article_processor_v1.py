@@ -21,28 +21,26 @@ from pyutils.io import FileManager
 
 # %%
 
-real_estate_keywords = ['house', 'propert', 'properti','property','home', 'mortgag', 'mortgage','estate', 'estat']
-retail_keywords = ['retail', 'retai', 'shop', 'amazon' , 'sale', 'supermarket' , 'groceri']
-energy_keywords = ['oil','commod', 'gas', 'shale', 'shal', 'solar', 'e-car', 'e-vehicle', 'middle east', 'opec', 'shell', 'bp', 'chevron', 'barrel','energy', 'energi']
+#real_estate_keywords = ['house', 'propert', 'properti','property','home', 'mortgag', 'mortgage','estate', 'estat']
+#retail_keywords = ['retail', 'retai', 'shop', 'amazon' , 'sale', 'supermarket' , 'groceri']
+#energy_keywords = ['oil','commod', 'gas', 'shale', 'shal', 'solar', 'e-car', 'e-vehicle', 'middle east', 'opec', 'shell', 'bp', 'chevron', 'barrel','energy', 'energi']
 
 #xcel = pd.read_excel('C:\\Users\\kartikaya\\Python_Data\\Article_Search_MindTrust\\FUNDS\\Funds-sectors.xlsx')
 #funds = xcel.iloc[:, 0]
 #tags = xcel.iloc[:, 1]
 #isin = xcel.iloc[:, 2]
 
-all_articles_aviation = os.listdir("./articles/aviation")
-all_articles_defence = os.listdir("./articles/defence")
-all_articles_finance = os.listdir("./articles/finance")
-all_articles_power = os.listdir("./articles/power")
-all_articles_telecom = os.listdir("./articles/telecom")
+#all_articles_aviation = os.listdir("./articles/aviation")
+#all_articles_finance = os.listdir("./articles/finance")
+#all_articles_infrastructure = os.listdir("./articles/infrastructure")
+#all_articles_power = os.listdir("./articles/power")
 
 
-articles_dir_list = ["aviation","finance","power","infrastructure"]
+# %%
 
-
+articles_dir_list = ["aviation","finance","infrastructure","power"]
 
 fm = FileManager()
-
 
 ps = PorterStemmer()
 j = 0
@@ -54,9 +52,6 @@ for directory in articles_dir_list:
         
         category = directory
         file = parent_dir + category + '/'+ article
-        
-        
-        
         
         full_text = fm.read(file)
         article_cleaned = re.sub('[^a-zA-Z]',' ', full_text)
@@ -93,8 +88,8 @@ for directory in articles_dir_list:
         kwd_wgt_dict_infrastructure = df_infrastructure.set_index('keyword').to_dict()['weight']
         word_hits_infrastructure= hit_count(sorted_x, df_infrastructure.iloc[:,0], kwd_wgt_dict_infrastructure)
         
-        articles_to_review = './review_article/'+'power'+'.txt'
-        val = category +',' + file + ',' + str(word_hits_aviation) + ','  + str(word_hits_finance) + ','  + str(word_hits_power) +str(word_hits_infrastructure) + ','+ '\n'
+        articles_to_review = './review_article/'+'score'+'.csv'
+        val = category +',' + file + ',' + str(word_hits_aviation) + ',' + str(word_hits_finance) + ',' + str(word_hits_infrastructure) + ',' + str(word_hits_power) + ','+ '\n'
         fm.append(articles_to_review, val)
         
         
@@ -104,11 +99,9 @@ for directory in articles_dir_list:
 # %%
 article_list = []
 #for article in all_articles_aviation:
-article = 'data4.txt'
-category = 'infrastructure'
+article = 'data0.txt'
+category = 'fil'
 file = './articles/'+ category + '/'+ article
-
-
 
 
 full_text = fm.read(file)
@@ -132,11 +125,6 @@ df_power = df.loc[df['category'] == 'power'].iloc[:,0:-1]
 kwd_wgt_dict_power = df_power.set_index('keyword').to_dict()['weight']
 word_hits_power = hit_count(sorted_x, df_power.iloc[:,0], kwd_wgt_dict_power)
 
-
-df_defence = df.loc[df['category'] == 'defence'].iloc[:,0:-1]
-kwd_wgt_dict_defence = df_defence.set_index('keyword').to_dict()['weight']
-word_hits_defence = hit_count(sorted_x, df_defence.iloc[:,0], kwd_wgt_dict_defence)
-
 df_finance = df.loc[df['category'] == 'finance'].iloc[:,0:-1]
 kwd_wgt_dict_finance = df_finance.set_index('keyword').to_dict()['weight']
 word_hits_finance = hit_count(sorted_x, df_finance.iloc[:,0], kwd_wgt_dict_finance)
@@ -144,6 +132,12 @@ word_hits_finance = hit_count(sorted_x, df_finance.iloc[:,0], kwd_wgt_dict_finan
 df_aviation = df.loc[df['category'] == 'aviation'].iloc[:,0:-1]
 kwd_wgt_dict_aviation = df_aviation.set_index('keyword').to_dict()['weight']
 word_hits_aviation = hit_count(sorted_x, df_aviation.iloc[:,0], kwd_wgt_dict_aviation)
+
+df_infrastructure= df.loc[df['category'] == 'infrastructure'].iloc[:,0:-1]
+kwd_wgt_dict_infrastructure = df_infrastructure.set_index('keyword').to_dict()['weight']
+word_hits_infrastructure= hit_count(sorted_x, df_infrastructure.iloc[:,0], kwd_wgt_dict_infrastructure)
+        
+
 
 
 #scores_list = [word_hits_finance, word_hits_power, word_hits_defence, word_hits_aviation]
